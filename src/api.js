@@ -1,11 +1,44 @@
-var express = require('express');
-var bodyParser = require('body-parser');
-var Horseman = require('node-horseman');
-var async = require('async');
+const express = require('express');
+const bodyParser = require('body-parser');
+const Horseman = require('node-horseman');
+const async = require('async');
+const mysql = require('mysql');
 
-var app = express();
+const fs = require('fs');
+const path = require('path');
+
+const mysql_config = {
+    user: 'kyle',
+    password: 'Fuck no more days.',
+    host: 'localhost',
+    database: 'gallery'
+}
+
+const app = express();
 
 app.use(new bodyParser());
+
+function getDirectories (srcpath) {
+  return fs.readdirSync(srcpath)
+    .filter(file => fs.lstatSync(path.join(srcpath, file)).isDirectory())
+}
+
+var routes = getDirectories('./routes'); // ["users", ...];
+
+for (var i in routes) {
+    console.log("\nInitializing " + routes[i] + " route.\n");
+
+    var routePath = path.resolve('./routes/' + routes[i] + '/');
+
+    var routeModel = require(routePath + '/model-mysql.js')(mysql_config);
+    var routeRequestHandler =  require(routePath + '/request-handler.js')(mysql_config, routeModel);
+
+    app.use('/api/' + routes[i], routeRequestHandler);
+
+    console.log("\n" + routes[i] + " route initialized.\n");
+}
+
+
 
 function ScrapistAPI() {
     /*
