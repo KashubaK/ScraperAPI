@@ -68,7 +68,6 @@ for (var i in routes) {
     console.log("\n" + routes[i] + " route initialized.\n");
 }
 
-
 function ScrapistAPI() {
     /*
         scrape: Scrape a web site for data, completely modular.

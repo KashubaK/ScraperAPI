@@ -28,6 +28,7 @@ module.exports = function UsersRequestHandler(mysql_config, model, tokens) {
           if (data) {
               if (data.password === req.body.password) {
                   delete data.password;
+
                   var token = tokens.createToken({
                       user_id: data.id
                   });
