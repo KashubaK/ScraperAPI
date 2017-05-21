@@ -2,7 +2,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var mysql = require('mysql');
 
-module.exports = function UsersRequestHandler(mysql_config, model) {
+module.exports = function UsersRequestHandler(mysql_config, model, tokens) {
   var router = express.Router();
 
   router.use(new bodyParser());
@@ -28,6 +28,11 @@ module.exports = function UsersRequestHandler(mysql_config, model) {
           if (data) {
               if (data.password === req.body.password) {
                   delete data.password;
+                  var token = tokens.createToken({
+                      user_id: data.id
+                  });
+
+                  data.token = token;
                   return res.json(data);
               }
           }

@@ -14,9 +14,39 @@ const mysql_config = {
     database: 'gallery'
 }
 
+var tokens = require('./util/tokens.js')(mysql_config);
+
 const app = express();
 
 app.use(new bodyParser());
+
+// Protects endpoints from unauthorized requests, and puts token data into the request
+//  body object to be accessed by the endpoint's request handler.
+app.use(function processToken(req, res, next) {
+    var token_exempt_endpoints = [
+        "/api/users/auth"
+    ];
+
+    if (token_exempt_endpoints.indexOf(req.originalUrl) !== -1) {
+        return next();
+    }
+
+    if (req.body.token) {
+        var decoded = tokens.decodeToken(req.body.token);
+        req.body.decoded_token_data = decoded;
+    } else if (req.headers.authorization) {
+        var decoded = tokens.decodeToken(req.headers.authorization);
+        req.body.decoded_token_data = decoded;
+    } else {
+        return res.status(403).json({err: "Token not provided."});
+    }
+
+    if (req.body.decoded_token_data.err) {
+        return res.status(403).json({err: "Invalid or expired token."});
+    }
+
+    return next();
+})
 
 function getDirectories (srcpath) {
   return fs.readdirSync(srcpath)
@@ -31,13 +61,12 @@ for (var i in routes) {
     var routePath = path.resolve('./routes/' + routes[i] + '/');
 
     var routeModel = require(routePath + '/model-mysql.js')(mysql_config);
-    var routeRequestHandler =  require(routePath + '/request-handler.js')(mysql_config, routeModel);
+    var routeRequestHandler =  require(routePath + '/request-handler.js')(mysql_config, routeModel, tokens);
 
     app.use('/api/' + routes[i], routeRequestHandler);
 
     console.log("\n" + routes[i] + " route initialized.\n");
 }
-
 
 
 function ScrapistAPI() {

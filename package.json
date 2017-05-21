@@ -13,6 +13,9 @@
     "async": "^2.4.0",
     "body-parser": "^1.17.1",
     "express": "^4.15.2",
+    "jsonwebtoken": "^7.4.1",
+    "lodash": "^4.17.4",
+    "mysql": "^2.13.0",
     "node-horseman": "^3.3.0",
     "phantomjs": "^2.1.7"
   }
